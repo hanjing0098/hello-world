@@ -1,25 +1,15 @@
 appname: hello-world  # 应用名，在集群内唯一，由小写字母、数字和 `-` 组成，且开头不能为数字，不能有连续的 `-`
 
-build:  # 描述如何构建 hello-world:build 镜像
+build:  # 描述如何构建 hello-world:build-${git-committer-date}-${git-commit-hash} 镜像
   base: golang:1.8  # 基础镜像，类似于 Dockerfile 里的 FROM
-  prepare:  # 以 build.base 为基底镜像，执行 build.prepare.script，生成 registry.${LAIN-domain}/hello-world:prepare-${build.prepare.version}-${timestamp}，作为 lain build 的新基底镜像
-    version: 201705231514  # lain build 时会选取 version 最大的 prepare 镜像作为基底镜像
-    script:
-      - go get -u github.com/go-redis/redis  # 安装依赖
-  script:  # 以 registry.${LAIN-domain}/hello-world:prepare-201705231514-${timestamp} 为基底镜像
-    - go build -o hello-world  # 编译，类似于 Dockerfile 里的 RUN，WORKDIR 为 /lain/app
+  script:
+    - go build -o hello-world  # 编译指令，类似于 Dockerfile 里的 RUN，WORKDIR 为 /lain/app
 
-release:  # 运行容器时使用的镜像，不写时默认为 hello-world:build
-  dest_base: centos:7  # 团队内部可能会希望采用统一的基底镜像，以减小镜像仓库存储的镜像体积
-  copy:  # 将 build 镜像里的编译结果复制到 release 镜像
-    - src: /lain/app/hello-world  # build 镜像里的编译结果
-      dest: /hello-world  # release 镜像里的路径
-
-use_services:
-  redis-service-sm:  # 提供 service 的应用的 appname
-    - redis  # 提供 service 的应用里的 proc 的名字，这个 proc 需要定义相应的 portal
+test:  # 这里是单元测试的入口
+  script:
+    - echo 'lain testing' > testresult.log  # 单元测试产生的结果文件，比如 testresult.xml 或者 cov.xml 可以通过 lain test -r 参数保存到本地文件系统
 
 proc.web:  # 定义一个 proc，名字为 web（当 proc.type 为 web 时，proc 的名字也必须为 web，即一个 app 只能有一个 web 类型的 proc，且其名字为 web）
   type: web  # proc 类型为 web（LAIN 会为 web 类型的 proc 配置 ${appname}.${LAIN-domain} 的域名，对外提供 HTTP 服务）
-  cmd: /hello-world
+  cmd: /lain/app/hello-world  # 因为 WORKDIR 为 /lain/app，所以编译好的程序在 /lain/app 目录下
   port: 8080  # hello-world 监听的端口
