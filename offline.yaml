@@ -1,7 +1,7 @@
 hello-world--hi:
     kind: daemon
     replica: 1
-    cmd: /lain/app/hello-workd
+    cmd: /lain/app/hello-world
     env:
         - name: LAIN_RUN_MODE
           value: offline
