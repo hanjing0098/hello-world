@@ -1,0 +1,10 @@
+hello-world--hi:
+    kind: daemon
+    replica: 1
+    cmd: /lain/app/hello-workd
+    env:
+        - name: LAIN_RUN_MODE
+          value: offline
+    secret:
+        name: hello-world-secrets
+        path: /lain/app/secrets.yaml
