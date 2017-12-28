@@ -5,6 +5,3 @@ hello-world--hi:
     env:
         - name: LAIN_RUN_MODE
           value: offline
-    secret:
-        name: hello-world-secrets
-        path: /lain/app/secrets.yaml
